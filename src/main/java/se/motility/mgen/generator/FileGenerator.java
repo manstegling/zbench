@@ -6,9 +6,12 @@ import java.util.Random;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FileGenerator {
 
+    private static final Logger LOG = LoggerFactory.getLogger(FileGenerator.class);
     private static final ObjectWriter MAPPER = new ObjectMapper()
             .writerFor(PerfMessage.class);
 
@@ -16,9 +19,9 @@ public class FileGenerator {
 
     public static void main(String[] args) {
         int files = args.length != 0 ? Integer.parseInt(args[0]) : 5;
-        long currentTime = 0L;
         PerfMessage msg;
         for (int f = 0; f < files; f++) {
+            long currentTime = 0L;
             try (BufferedWriter writer = new BufferedWriter(new FileWriter( "data/" + f + ".messages"))) {
                 for (int i = 0; i < 10_000_000; i++) {
                     currentTime += R.nextDouble() < 0.05 ? 1 : 0;
@@ -30,7 +33,7 @@ public class FileGenerator {
                     writer.newLine();
                 }
             } catch (Exception e) {
-
+                LOG.error("Fail: {}", e.getMessage(), e);
             }
         }
 
