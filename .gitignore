@@ -1,0 +1,11 @@
+target/
+/bin/
+.idea/
+.settings/
+.project
+.factorypath
+.classpath
+*.iml
+*.jfr
+log/
+data/
