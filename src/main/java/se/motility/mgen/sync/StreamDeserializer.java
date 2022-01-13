@@ -1,5 +1,6 @@
 package se.motility.mgen.sync;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -23,6 +24,25 @@ public class StreamDeserializer {
     public void readMessages(InputStream input) {
         PerfMessage message;
         try (JsonParser parser = factory.createParser(input)) {
+            while (parser.nextToken() != null) {
+                message = read(parser);
+                consumer.onEvent(message, message.getT());
+            }
+        } catch (JsonGenerationException e) {
+            e.printStackTrace();
+        } catch (JsonMappingException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Variation of #readMessages in which Jackson manages the underlying resource.
+    // Used for performance testing but not desired for production. Fortunately,
+    // this does not really improve performance over using an InputStream.
+    public void readFile(String filename) {
+        PerfMessage message;
+        try (JsonParser parser = factory.createParser(new File(filename))) {
             while (parser.nextToken() != null) {
                 message = read(parser);
                 consumer.onEvent(message, message.getT());

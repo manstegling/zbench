@@ -3,7 +3,6 @@ package se.motility.mgen.sync;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -62,6 +61,7 @@ public class Reader {
         String fullName = "data/" + filename + FILE_SUFFIX;
 
         StreamDeserializer d = new StreamDeserializer(consumer);
+        // TODO: Add dynamical identification of GZIP files
         try (InputStream in = new BufferedInputStream(new FileInputStream(fullName))){
             d.readMessages(in);
         } catch (IOException e) {
@@ -69,5 +69,14 @@ public class Reader {
         }
         consumer.complete();
     }
+
+    public void readFileStream(String filename, SynchronizedConsumer<PerfMessage> consumer) {
+        String fullName = "data/" + filename + FILE_SUFFIX;
+        StreamDeserializer d = new StreamDeserializer(consumer);
+        d.readFile(fullName);
+        consumer.complete();
+    }
+
+
 
 }
