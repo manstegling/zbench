@@ -22,14 +22,18 @@ public class SyncApp {
         Locale.setDefault(Locale.ENGLISH);
     }
 
-    public static final Comparator<PerfMessage> COMPARATOR = Comparator.comparingLong(PerfMessage::getL);
+    public static final Comparator<PerfMessage> COMPARATOR = Comparator
+            .comparingLong(PerfMessage::getSequence)
+            .thenComparing(PerfMessage::getId);
     private static final Logger LOG = LoggerFactory.getLogger(SyncApp.class);
 
     public static void main(String... args) {
         int sources = args.length != 0 ? Integer.parseInt(args[0]) : 3;
-        LOG.info("Setting up pipeline to process data from {} sources", sources);
+        int iterations = args.length > 1 ? Integer.parseInt(args[1]) : 1;
+        String path = args.length > 2 ? args[2] : "data/";
 
-//        for (int iter = 0; iter < 5; iter++) {
+        LOG.info("Setting up pipeline: {} runs with {} sources from '{}'", iterations, sources, path);
+        for (int iter = 0; iter < iterations; iter++) {
 
             Ziploq<PerfMessage> ziploq = ZiploqFactory.create(Optional.of(COMPARATOR));
             Reader r = new Reader();
@@ -38,11 +42,11 @@ public class SyncApp {
                 String file = String.valueOf(i);
                 SynchronizedConsumer<PerfMessage> c = ziploq
                         .registerOrdered(8196, BackPressureStrategy.BLOCK, file);
-                Thread t = new Thread(() -> r.readFullStream(file, c));
+                Thread t = new Thread(() -> r.readFileStream(path, file, c));
                 threads.add(t);
             }
 
-            LOG.info("Starting to process data...");
+            LOG.info("Starting run {}...", iter+1);
             threads.forEach(Thread::start);
 
             long start = System.currentTimeMillis();
@@ -57,18 +61,21 @@ public class SyncApp {
                 LOG.error("Fail: {}", e.getMessage(), e);
                 Thread.currentThread().interrupt();
             }
-//        }
-
+        }
+        LOG.info("{} runs completed.", iterations);
     }
 
     private static long process(Ziploq<PerfMessage> ziploq) throws InterruptedException {
         long messages = 0L;
         long checksum = 0L;
+        long prev = 0L;
         Entry<PerfMessage> msg;
         Entry<PerfMessage> end = Ziploq.getEndSignal();
         while ((msg = ziploq.take()) != end) {
             messages++;
-            checksum += msg.getMessage().getI();
+            // path-dependent checksum to prevent rearrangements
+            checksum += (msg.getMessage().getI() - prev) * (msg.getMessage().getI() - prev);
+            prev = msg.getMessage().getI();
         }
         LOG.info("Checksum: {}", checksum);
         return messages;

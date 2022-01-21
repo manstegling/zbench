@@ -5,10 +5,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PerfMessage {
 
-    private long t;
-    private long l;
+    private long timestamp;
+    private long sequence;
     private int i;
     private boolean b;
+    private String id;
     private String s1;
     private String s2;
     private String s3;
@@ -18,31 +19,32 @@ public class PerfMessage {
         // required by jackson
     }
 
-    public PerfMessage(long t, long l, int i, boolean b, String s1, String s2, String s3, String s4) {
-        this.t = t;
-        this.l = l;
+    public PerfMessage(long timestamp, long sequence, int i, boolean b, String id, String s1, String s2, String s3, String s4) {
+        this.timestamp = timestamp;
+        this.sequence = sequence;
         this.i = i;
         this.b = b;
+        this.id = id;
         this.s1 = s1;
         this.s2 = s2;
         this.s3 = s3;
         this.s4 = s4;
     }
 
-    public long getT() {
-        return t;
+    public long getTimestamp() {
+        return timestamp;
     }
 
-    public void setT(long t) {
-        this.t = t;
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
     }
 
-    public long getL() {
-        return l;
+    public long getSequence() {
+        return sequence;
     }
 
-    public void setL(long l) {
-        this.l = l;
+    public void setSequence(long sequence) {
+        this.sequence = sequence;
     }
 
     public int getI() {
@@ -59,6 +61,14 @@ public class PerfMessage {
 
     public void setB(boolean b) {
         this.b = b;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getS1() {
@@ -92,4 +102,5 @@ public class PerfMessage {
     public void setS4(String s4) {
         this.s4 = s4;
     }
+
 }
