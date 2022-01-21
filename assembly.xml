@@ -4,7 +4,7 @@
     <id>archive</id>
     <formats>
         <format>dir</format>
-        <!--<format>tar.gz</format>-->
+        <format>tar.gz</format>
     </formats>
     <includeBaseDirectory>false</includeBaseDirectory>
     <fileSets>
@@ -12,7 +12,8 @@
             <directory>${project.basedir}/config</directory>
         </fileSet>
         <fileSet>
-            <directory>${project.basedir}/data</directory>
+            <directory>${project.basedir}/scripts</directory>
+            <outputDirectory>/</outputDirectory>
         </fileSet>
     </fileSets>
     <files>
