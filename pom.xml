@@ -2,13 +2,13 @@
   <modelVersion>4.0.0</modelVersion>
   
   <groupId>se.motility</groupId>
-  <artifactId>mgen</artifactId>
+  <artifactId>zbench</artifactId>
   <version>1.0-SNAPSHOT</version>
-  <name>mgen</name>
+  <name>zbench</name>
   <description>
     Lab suite for message generation and performance testing
   </description>
-  <url>https://github.com/manstegling/mgen</url>
+  <url>https://github.com/manstegling/zbench</url>
   <packaging>jar</packaging>
 
   <properties>
@@ -37,7 +37,7 @@
             <manifest>
               <addClasspath>true</addClasspath>
               <classpathPrefix>lib</classpathPrefix>
-              <mainClass>se.motility.mgen.sync.SyncApp</mainClass>
+              <mainClass>se.motility.zbench.sync.SyncApp</mainClass>
             </manifest>
           </archive>
         </configuration>
@@ -84,7 +84,7 @@
     <dependency>
       <groupId>se.motility</groupId>
       <artifactId>ziploq</artifactId>
-      <version>2.0</version>
+      <version>3.0-SNAPSHOT</version>
     </dependency>
     <!-- Test dependencies -->
     <dependency>
@@ -123,9 +123,9 @@
   </developers>
   
   <scm>
-    <connection>scm:git:git://github.com/manstegling/mgen.git</connection>
-    <developerConnection>scm:git:ssh://github.com:manstegling/mgen.git</developerConnection>
-    <url>http://github.com/manstegling/mgen</url>
+    <connection>scm:git:git://github.com/manstegling/zbench.git</connection>
+    <developerConnection>scm:git:ssh://github.com:manstegling/zbench.git</developerConnection>
+    <url>http://github.com/manstegling/zbench</url>
   </scm>
   
   <distributionManagement>

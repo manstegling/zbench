@@ -1,4 +1,4 @@
-package se.motility.mgen.sync;
+package se.motility.zbench.sync;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,7 +9,7 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import se.motility.mgen.generator.PerfMessage;
+import se.motility.zbench.generator.PerfMessage;
 import se.motility.ziploq.api.SynchronizedConsumer;
 
 public class StreamDeserializer {

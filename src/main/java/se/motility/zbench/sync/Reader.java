@@ -1,4 +1,4 @@
-package se.motility.mgen.sync;
+package se.motility.zbench.sync;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -15,7 +15,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import se.motility.mgen.generator.PerfMessage;
+import se.motility.zbench.generator.PerfMessage;
 import se.motility.ziploq.api.SynchronizedConsumer;
 
 public class Reader {
@@ -107,7 +107,7 @@ public class Reader {
         consumer.complete();
     }
 
-    private static InputStream getStream(String filename) throws IOException {
+    public static InputStream getStream(String filename) throws IOException {
         InputStream fis = new FileInputStream(filename);
         if (filename.endsWith(GZIP_SUFFIX)) {
             fis = new GZIPInputStream(fis, 2048);
@@ -115,7 +115,7 @@ public class Reader {
         return new BufferedInputStream(fis);
     }
 
-    private static BufferedReader getReader(String filename) throws IOException {
+    public static BufferedReader getReader(String filename) throws IOException {
         InputStream fis = new FileInputStream(filename);
         if (filename.endsWith(GZIP_SUFFIX)) {
             fis = new GZIPInputStream(fis, 2048);

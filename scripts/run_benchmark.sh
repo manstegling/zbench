@@ -25,14 +25,14 @@ echo "Running benchmark suite for $ITERATIONS iterations using $SOURCES sources"
 N_FILES=$(ls -1 data/ 2>/dev/null | wc -l)
 if [ $N_FILES -lt $SOURCES ] || [ ! -f "data/$[SOURCES - 1].messages" ]; then
   echo "Running file generator for $SOURCES sources"
-  time java -cp mgen-1.0-SNAPSHOT.jar se.motility.mgen.generator.FileGenerator $SOURCES
+  time java -cp zbench-1.0-SNAPSHOT.jar se.motility.zbench.generator.FileGenerator $SOURCES
   wait
   echo "Source generation completed"
 fi
 
 for i in $(seq 1 $SOURCES); do
   echo "Starting benchmark for $ITERATIONS iterations using $i sources"
-  time java JVM_OPTS -jar mgen-1.0-SNAPSHOT.jar $i $ITERATIONS
+  time java JVM_OPTS -jar zbench-1.0-SNAPSHOT.jar $i $ITERATIONS
   wait
   echo "Benchmark completed for $i sources"
 done

@@ -1,10 +1,10 @@
-package se.motility.mgen.sync;
+package se.motility.zbench.sync;
 
 import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
-import se.motility.mgen.generator.PerfMessage;
+import se.motility.zbench.generator.PerfMessage;
 
 public class Deserializer {
 

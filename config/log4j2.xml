@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="WARN">
     <Appenders>
-        <RollingFile name="file" fileName="log/mgen.${date:yyyy-MM-dd}.log"
-                     filePattern="log/mgen.%d{yyyy-MM-dd}.%i.log.gz" append="true">
+        <RollingFile name="file" fileName="log/zbench.${date:yyyy-MM-dd}.log"
+                     filePattern="log/zbench.%d{yyyy-MM-dd}.%i.log.gz" append="true">
             <PatternLayout pattern="%d{ISO8601} [%t] - %p - %c{1} - %msg%n"/>
+            <OnStartupTriggeringPolicy/>
+        </RollingFile>
+        <RollingFile name="stats" fileName="log/stats.${date:yyyy-MM-dd}.log"
+                     filePattern="log/stats.%d{yyyy-MM-dd}.%i.log.gz" append="true">
+            <PatternLayout pattern="%d{yyyy-MM-dd'T'HH:mm:ss};%msg%n"/>
+            <MarkerFilter marker="STAT" onMatch="ACCEPT" onMismatch="DENY"/>
             <OnStartupTriggeringPolicy/>
         </RollingFile>
         <Console name="console" target="SYSTEM_OUT">
@@ -14,6 +20,7 @@
         <Root level="info">
             <AppenderRef ref="console"/>
             <AppenderRef ref="file"/>
+            <AppenderRef ref="stats"/>
         </Root>
     </Loggers>
 </Configuration>

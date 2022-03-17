@@ -1,4 +1,4 @@
-package se.motility.mgen.generator;
+package se.motility.zbench.generator;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -29,14 +29,15 @@ public class FileGenerator {
     public static void main(String[] args) {
         int messages = 10_000_000;
         int files = args.length != 0 ? Integer.parseInt(args[0]) : 5;
-        File data = new File(DATA_PATH);
+        String path = args.length > 1 ? args[1] : DATA_PATH;
+        File data = new File(path);
         data.mkdirs();
         PerfMessage msg;
         for (int f = 0; f < files; f++) {
             long start = System.currentTimeMillis();
             long currentTime = 0L;
             long sequence = 0L;
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter( DATA_PATH + f + ".messages"))) {
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter( path + f + ".messages"))) {
                 for (int i = 0; i < messages; i++) {
                     currentTime += R.nextDouble() < 0.05 ? 1 : 0;
                     sequence += R.nextInt(5);
