@@ -17,7 +17,6 @@ import se.motility.ziploq.api.Entry;
 import se.motility.ziploq.api.SynchronizedConsumer;
 import se.motility.ziploq.api.Ziploq;
 import se.motility.ziploq.api.ZiploqFactory;
-import se.motility.ziploq.impl.WaitStrategy;
 import se.motility.ziploq.impl.ZiploqImpl;
 
 public class SyncApp {
@@ -39,27 +38,26 @@ public class SyncApp {
         int sources = args.length != 0 ? Integer.parseInt(args[0]) : 3;
         int iterations = args.length > 1 ? Integer.parseInt(args[1]) : 1;
         String path = args.length > 2 ? args[2] : "data/";
-        int threadPool = args.length > 3 ? Math.max(Integer.parseInt(args[3]), 0) : 0;
-        WaitStrategy.Mode waitMode = args.length > 4 ? WaitStrategy.Mode.valueOf(args[4]) : WaitStrategy.Mode.MILLI_10;
+        int poolSize = args.length > 3 ? Math.max(Integer.parseInt(args[3]), 0) : 0;
 
         LOG.info("Setting up pipeline: {} iterations, {} sources ('{}'), {}",
-                iterations, sources, path, threadPool > 0 ? "thread pool " + threadPool : "individual threads");
+                iterations, sources, path, poolSize > 0 ? "pool size: " + poolSize : "dedicated threads");
         LOG.info(STAT_MARKER, "Start Time;Timestamp;Total messages;Duration;TPS;Checksum;Sources;Iterations;Thread Pool;Path;WaitMode;Wait Stats");
 
-        Parameters p = new Parameters(sources, iterations, path, threadPool, waitMode, startTime);
+        Parameters p = new Parameters(sources, iterations, path, poolSize, startTime);
         for (int iter = 0; iter < iterations; iter++) {
             LOG.info("Starting iteration {}...", iter+1);
-            if (threadPool <= 0) {
-                runThreadPerSource(sources, path, p);
+            if (poolSize <= 0) {
+                runWithDedicatedThreads(sources, path, p);
             } else {
-                runWithThreadPool(sources, path, threadPool, p);
+                runWithThreadPool(sources, path, poolSize, p);
             }
 
         }
         LOG.info("{} runs completed.", iterations);
     }
 
-    private static void runThreadPerSource(int sources, String path, Parameters parameters) {
+    private static void runWithDedicatedThreads(int sources, String path, Parameters parameters) {
         Ziploq<PerfMessage> ziploq = ZiploqFactory.create(COMPARATOR);
         Reader r = new Reader();
         List<Thread> threads = new ArrayList<>();
@@ -88,12 +86,11 @@ public class SyncApp {
         }
     }
 
-    private static void runWithThreadPool(int sources, String path, int threadPool,
+    private static void runWithThreadPool(int sources, String path, int poolSize,
             Parameters parameters) {
         ZiploqFactory.ZiploqServiceBuilder<PerfMessage> ziploq = ZiploqFactory
                 .serviceBuilder(COMPARATOR)
-                .setWaitMode(parameters.waitMode)
-                .setThreads(threadPool);
+                .setPoolSize(poolSize);
 
         for (int i = 0; i < sources; i++) {
             String file = String.valueOf(i);
@@ -147,7 +144,6 @@ public class SyncApp {
                 Long.toString(parameters.iterations),
                 Long.toString(parameters.threadPool),
                 parameters.path,
-                parameters.waitMode.toString(),
                 Arrays.toString(result.delayStats));
     }
 
@@ -169,15 +165,12 @@ public class SyncApp {
         private final int iterations;
         private final String path;
         private final int threadPool;
-        private final WaitStrategy.Mode waitMode;
         private final long startTime;
-        public Parameters(int sources, int iterations, String path, int threadPool,
-                WaitStrategy.Mode waitMode, long startTime) {
+        public Parameters(int sources, int iterations, String path, int threadPool, long startTime) {
             this.sources = sources;
             this.iterations = iterations;
             this.path = path;
             this.threadPool = threadPool;
-            this.waitMode = waitMode;
             this.startTime = startTime;
         }
     }
