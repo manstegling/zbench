@@ -27,9 +27,9 @@ public class FileGenerator {
     private static final Random R = new Random(13377331L);
 
     public static void main(String[] args) {
-        int messages = 10_000_000;
         int files = args.length != 0 ? Integer.parseInt(args[0]) : 5;
         String path = args.length > 1 ? args[1] : DATA_PATH;
+        long messages = args.length > 2 ? Integer.parseInt(args[2]) : 10_000_000;
         File data = new File(path);
         data.mkdirs();
         PerfMessage msg;
@@ -56,7 +56,7 @@ public class FileGenerator {
                 }
                 writer.flush();
                 long duration = System.currentTimeMillis() - start;
-                LOG.info("Completed '{}. Took {} ms, tps: {}'", f, duration, messages * 1000 / duration);
+                LOG.info("Completed '{}'. Took {} ms, tps: {}", f, duration, messages * 1000 / duration);
             } catch (Exception e) {
                 LOG.error("Fail: {}", e.getMessage(), e);
             }

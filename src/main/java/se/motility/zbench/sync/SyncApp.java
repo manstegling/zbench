@@ -40,7 +40,7 @@ public class SyncApp {
         int iterations = args.length > 1 ? Integer.parseInt(args[1]) : 1;
         String path = args.length > 2 ? args[2] : "data/";
         int threadPool = args.length > 3 ? Math.max(Integer.parseInt(args[3]), 0) : 0;
-        WaitStrategy.Mode waitMode = args.length > 4 ? WaitStrategy.Mode.valueOf(args[4]) : WaitStrategy.Mode.BACKOFF;
+        WaitStrategy.Mode waitMode = args.length > 4 ? WaitStrategy.Mode.valueOf(args[4]) : WaitStrategy.Mode.MILLI_10;
 
         LOG.info("Setting up pipeline: {} iterations, {} sources ('{}'), {}",
                 iterations, sources, path, threadPool > 0 ? "thread pool " + threadPool : "individual threads");
@@ -50,9 +50,6 @@ public class SyncApp {
         for (int iter = 0; iter < iterations; iter++) {
             LOG.info("Starting iteration {}...", iter+1);
             if (threadPool <= 0) {
-                if (waitMode != WaitStrategy.Mode.BACKOFF) {
-                    LOG.warn("Only BACKOFF is implemented for thread-per-source. Ignoring strategy {}", waitMode);
-                }
                 runThreadPerSource(sources, path, p);
             } else {
                 runWithThreadPool(sources, path, threadPool, p);
@@ -139,29 +136,32 @@ public class SyncApp {
     }
 
     private static String formatStats(Parameters parameters, long timestamp, long duration, Result result) {
-        return String.valueOf(parameters.startTime) +
-               SEMICOLON +
-               timestamp +
-               SEMICOLON +
-               result.messages +
-               SEMICOLON +
-               duration +
-               SEMICOLON +
-               result.messages * 1000 / duration +
-               SEMICOLON +
-               result.checksum +
-               SEMICOLON +
-               parameters.sources +
-               SEMICOLON +
-               parameters.iterations +
-               SEMICOLON +
-               parameters.threadPool +
-               SEMICOLON +
-               parameters.path +
-               SEMICOLON +
-               parameters.waitMode +
-               SEMICOLON +
-               Arrays.toString(result.delayStats);
+        return format(
+                Long.toString(parameters.startTime),
+                Long.toString(timestamp),
+                Long.toString(result.messages),
+                Long.toString(duration),
+                Long.toString(result.messages * 1000 / duration),
+                Long.toString(result.checksum),
+                Long.toString(parameters.sources),
+                Long.toString(parameters.iterations),
+                Long.toString(parameters.threadPool),
+                parameters.path,
+                parameters.waitMode.toString(),
+                Arrays.toString(result.delayStats));
+    }
+
+    private static String format(String... fields) {
+        StringBuilder sb = new StringBuilder();
+        boolean init = false;
+        for (String f : fields) {
+            if (init) {
+                sb.append(SEMICOLON);
+            }
+            sb.append(f);
+            init = true;
+        }
+        return sb.toString();
     }
 
     private static class Parameters {
