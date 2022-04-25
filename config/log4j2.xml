@@ -22,5 +22,6 @@
             <AppenderRef ref="file"/>
             <AppenderRef ref="stats"/>
         </Root>
+        <Logger name="se.motility.ziploq.impl.ZiploqImpl" level="debug"/>
     </Loggers>
 </Configuration>
