@@ -17,7 +17,6 @@ import se.motility.ziploq.api.Entry;
 import se.motility.ziploq.api.SynchronizedConsumer;
 import se.motility.ziploq.api.Ziploq;
 import se.motility.ziploq.api.ZiploqFactory;
-import se.motility.ziploq.impl.JobScheduler2;
 import se.motility.ziploq.impl.ZiploqImpl;
 
 public class SyncApp {
@@ -57,10 +56,8 @@ public class SyncApp {
             } else {
                 runWithThreadPool(sources, path, poolSize, p);
             }
-
         }
         LOG.info("{} runs completed.", iterations);
-        JobScheduler2.COOLDOWN_EXECUTOR.shutdown(); //TODO fixme
     }
 
     private static void runWithDedicatedThreads(int sources, String path, Parameters parameters) {
