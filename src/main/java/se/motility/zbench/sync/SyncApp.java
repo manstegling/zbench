@@ -17,6 +17,7 @@ import se.motility.ziploq.api.Entry;
 import se.motility.ziploq.api.SynchronizedConsumer;
 import se.motility.ziploq.api.Ziploq;
 import se.motility.ziploq.api.ZiploqFactory;
+import se.motility.ziploq.api.ZiploqOutput;
 import se.motility.ziploq.impl.ZiploqImpl;
 
 public class SyncApp {
@@ -120,7 +121,7 @@ public class SyncApp {
 
     }
 
-    private static Result process(Ziploq<PerfMessage> ziploq) throws InterruptedException {
+    private static Result process(ZiploqOutput<PerfMessage> ziploq) throws InterruptedException {
         long messages = 0L;
         long checksum = 0L;
         long prev = 0L;
