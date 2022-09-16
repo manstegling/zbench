@@ -1,7 +1,9 @@
 package se.motility.zbench.generator;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.Locale;
 import java.util.Random;
@@ -18,52 +20,101 @@ public class FileGenerator {
         Locale.setDefault(Locale.ENGLISH);
     }
 
+    private static final int VERSION = 1;
     private static final String[] IDS = {"AAAA", "BBBB", "XYZ", "TEST1", "RANDOM", "O", "B", "B2", "OPAQ"};
     private static final String DATA_PATH = "data/";
+    private static final String META_FILE = "filegen.meta";
     private static final Logger LOG = LoggerFactory.getLogger(FileGenerator.class);
-    private static final ObjectWriter MAPPER = new ObjectMapper()
-            .writerFor(PerfMessage.class);
-
-    private static final Random R = new Random(13377331L);
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final ObjectWriter WRITER = MAPPER.writerFor(PerfMessage.class);
 
     public static void main(String[] args) {
         int files = args.length != 0 ? Integer.parseInt(args[0]) : 5;
         String path = args.length > 1 ? args[1] : DATA_PATH;
-        long messages = args.length > 2 ? Integer.parseInt(args[2]) : 10_000_000;
-        File data = new File(path);
-        data.mkdirs();
-        PerfMessage msg;
-        for (int f = 0; f < files; f++) {
-            long start = System.currentTimeMillis();
-            long currentTime = 0L;
-            long sequence = 0L;
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter( path + f + ".messages"))) {
-                for (int i = 0; i < messages; i++) {
-                    currentTime += R.nextDouble() < 0.05 ? 1 : 0;
-                    sequence += R.nextInt(5);
-                    msg = new PerfMessage(
-                            currentTime,
-                            sequence,
-                            R.nextInt(1_000_000),
-                            R.nextBoolean(),
-                            IDS[R.nextInt(IDS.length)],
-                            R.nextInt() + "_S1",
-                            R.nextInt() + "_S2",
-                            R.nextInt() + "_S3",
-                            R.nextInt() + "_S4");
-                    writer.write(MAPPER.writeValueAsString(msg));
-                    writer.write('\n');
-                }
-                writer.flush();
-                long duration = System.currentTimeMillis() - start;
-                LOG.info("Completed '{}'. Took {} ms, tps: {}", f, duration, messages * 1000 / duration);
-            } catch (Exception e) {
-                LOG.error("Fail: {}", e.getMessage(), e);
-            }
-
+        long messages = args.length > 2 ? Integer.parseInt(args[2]) : 15_000_000;
+        if(new File(path).mkdirs()) {
+            LOG.info("Created folder {}", path);
         }
 
+        int first = findStartFile(path, files, messages);
+        for (int f = first; f < files; f++) {
+            long start = System.currentTimeMillis();
+            long messagesWritten = writeFile(path, f, messages);
+            long duration = System.currentTimeMillis() - start;
+            LOG.info("Completed '{}'. Took {} ms, tps: {}", f, duration, messagesWritten * 1000 / duration);
+        }
+        writeMeta(path, Math.max(files, first), messages);
     }
 
+    private static int findStartFile(String path, int files, long messages) {
+        MetaData meta = readMeta(path);
+        if (meta != null && meta.getVersion() == VERSION && meta.getMessages() >= messages) {
+            int start = meta.getFiles();
+            LOG.info("{} files already present. Only last {} files will be written", start, Math.max(0, files - start));
+            return start;
+        } else {
+            LOG.info("No matching prior files detected. All {} files will be written", files);
+            return 0;
+        }
+    }
+
+    private static long writeFile(String path, int file, long messages) {
+        long currentTime = 0L;
+        long sequence = 0L;
+        long fileSpecificMessages = messages / (file + 1);
+        String filename = file + ".messages";
+        Random r = new Random(5139047L + filename.hashCode());
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter( path + filename))) {
+            for (int i = 0; i < fileSpecificMessages; i++) {
+                currentTime += r.nextDouble() < 0.05 ? 1 : 0;
+                sequence += r.nextInt(5);
+                writer.write(WRITER.writeValueAsString(new PerfMessage(
+                        currentTime,
+                        sequence,
+                        r.nextInt(1_000_000),
+                        r.nextBoolean(),
+                        IDS[r.nextInt(IDS.length)],
+                        r.nextInt() + "_S1",
+                        r.nextInt() + "_S2",
+                        r.nextInt() + "_S3",
+                        r.nextInt() + "_S4")));
+                writer.write('\n');
+            }
+            writer.flush();
+            return fileSpecificMessages;
+        } catch (Exception e) {
+            LOG.error("Fail: {}", e.getMessage(), e);
+            return -1L;
+        }
+    }
+
+    private static MetaData readMeta(String path) {
+        String filename = path + META_FILE;
+        if (!new File(filename).exists()) {
+            LOG.info("No meta file found in {}", path);
+            return null;
+        }
+        try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
+            String line = reader.readLine();
+            return MAPPER
+                    .readerFor(MetaData.class)
+                    .readValue(line);
+        } catch (Exception e) {
+            LOG.warn("Could not read meta file: {}", e.getMessage(), e);
+            return null;
+        }
+    }
+
+    private static void writeMeta(String path, int files, long messages) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(path + META_FILE))) {
+            ObjectWriter w = MAPPER.writerFor(MetaData.class);
+            MetaData meta = new MetaData(VERSION, files, messages);
+            writer.write(w.writeValueAsString(meta));
+            writer.write('\n');
+            writer.flush();
+        } catch (Exception e) {
+            LOG.warn("Could not produce meta file: {}", e.getMessage(), e);
+        }
+    }
 
 }

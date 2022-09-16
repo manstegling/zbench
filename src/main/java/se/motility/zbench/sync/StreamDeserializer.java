@@ -56,10 +56,11 @@ public class StreamDeserializer {
     // Variation of #readMessages in which Jackson manages the underlying resource.
     // Used for performance testing but not desired for production. Fortunately,
     // this does not really improve performance over using an InputStream.
-    public void readFile(String filename) {
+    public void readFile(String filename, long maxMessages) {
+        long messages = 0L;
         PerfMessage message;
         try (JsonParser parser = factory.createParser(new File(filename))) {
-            while (parser.nextToken() != null) {
+            while (messages++ < maxMessages && parser.nextToken() != null) {
                 message = Mapper.readPerfMessage(parser);
                 consumer.onEvent(message, message.getTimestamp());
             }

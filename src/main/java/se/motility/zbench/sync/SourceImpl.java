@@ -25,11 +25,13 @@ public class SourceImpl implements Source<PerfMessage> {
 
     private final JsonFactory factory = new JsonFactory();
     private final String filename;
+    private final long maxMessages;
+    private long messageCount;
 
     private InputStream in;
     private JsonParser parser;
 
-    public SourceImpl(String path, String filename) {
+    public SourceImpl(String path, String filename, long maxMessages) {
         String fullName = path + filename + FILE_SUFFIX;
         File file = new File(fullName);
         if (!file.exists()) {
@@ -40,6 +42,7 @@ public class SourceImpl implements Source<PerfMessage> {
             }
         }
         this.filename = fullName;
+        this.maxMessages = maxMessages;
     }
 
     public void init() throws IOException {
@@ -51,7 +54,7 @@ public class SourceImpl implements Source<PerfMessage> {
     public Entry<PerfMessage> emit() {
         for (;;) {
             try {
-                if (parser.nextToken() != null) {
+                if (messageCount++ < maxMessages && parser.nextToken() != null) {
                     PerfMessage message = Mapper.readPerfMessage(parser);
                     return new PerfEntry(message, message.getTimestamp());
                 } else {

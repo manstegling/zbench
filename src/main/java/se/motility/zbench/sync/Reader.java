@@ -100,10 +100,11 @@ public class Reader {
         consumer.complete();
     }
 
-    public void readFileStream(String path, String filename, SynchronizedConsumer<PerfMessage> consumer) {
+    public void readFileStream(String path, String filename, long maxMessages,
+            SynchronizedConsumer<PerfMessage> consumer) {
         String fullName = path + filename + FILE_SUFFIX;
         StreamDeserializer d = new StreamDeserializer(consumer);
-        d.readFile(fullName);
+        d.readFile(fullName, maxMessages);
         consumer.complete();
     }
 
@@ -115,7 +116,7 @@ public class Reader {
         return new BufferedInputStream(fis);
     }
 
-    public static BufferedReader getReader(String filename) throws IOException {
+    private static BufferedReader getReader(String filename) throws IOException {
         InputStream fis = new FileInputStream(filename);
         if (filename.endsWith(GZIP_SUFFIX)) {
             fis = new GZIPInputStream(fis, 2048);
