@@ -1,9 +1,9 @@
 package se.motility.zbench.sync;
 
 import se.motility.zbench.generator.PerfMessage;
-import se.motility.ziploq.api.Entry;
+import se.motility.ziploq.api.BasicEntry;
 
-public class PerfEntry implements Entry<PerfMessage> {
+public class PerfEntry implements BasicEntry<PerfMessage> {
 
     private static final long serialVersionUID = 1L;
 
@@ -25,8 +25,4 @@ public class PerfEntry implements Entry<PerfMessage> {
         return businessTs;
     }
 
-    @Override
-    public long getSystemTs() {
-        return 0;
-    }
 }

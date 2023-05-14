@@ -11,7 +11,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import se.motility.zbench.generator.PerfMessage;
-import se.motility.ziploq.api.Entry;
+import se.motility.ziploq.api.BasicEntry;
 import se.motility.ziploq.api.Source;
 import se.motility.ziploq.api.Ziploq;
 
@@ -51,7 +51,7 @@ public class SourceImpl implements Source<PerfMessage> {
     }
 
     @Override
-    public Entry<PerfMessage> emit() {
+    public BasicEntry<PerfMessage> emit() {
         for (;;) {
             try {
                 if (messageCount++ < maxMessages && parser.nextToken() != null) {

@@ -23,5 +23,6 @@
             <AppenderRef ref="stats"/>
         </Root>
         <Logger name="se.motility.ziploq.impl.ZiploqImpl" level="debug"/>
+        <Logger name="se.motility.ziploq.impl.JobScheduler" level="info"/>
     </Loggers>
 </Configuration>

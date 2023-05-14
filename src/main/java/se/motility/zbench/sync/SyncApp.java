@@ -17,7 +17,7 @@ import se.motility.ziploq.api.Entry;
 import se.motility.ziploq.api.SynchronizedConsumer;
 import se.motility.ziploq.api.Ziploq;
 import se.motility.ziploq.api.ZiploqFactory;
-import se.motility.ziploq.api.Sequencer;
+import se.motility.ziploq.api.Zipq;
 import se.motility.ziploq.impl.ZiploqImpl;
 
 public class SyncApp {
@@ -42,16 +42,14 @@ public class SyncApp {
         long messages = args.length > 2 ? Long.parseLong(args[2]) : 1_000_000L;
         String path = args.length > 3 ? args[3] : "data/";
         int poolSize = args.length > 4 ? Integer.parseInt(args[4]) : 0;
-        int schedulerType = args.length > 5 ? Integer.parseInt(args[5]) : 1;
-        int bufSize = args.length > 6 ? Integer.parseInt(args[6]) : 8192;
+        int bufSize = args.length > 5 ? Integer.parseInt(args[5]) : 8192;
 
-        LOG.info("Setting up pipeline: {} iterations, {} sources ('{}'), {}, scheduler={}, buffer={}",
-                iterations, sources, path, poolSize > 0 ? "pool size: " + poolSize : "dedicated threads",
-                schedulerType, bufSize);
+        LOG.info("Setting up pipeline: {} iterations, {} sources ('{}'), {}, buffer={}",
+                iterations, sources, path, poolSize > 0 ? "pool size: " + poolSize : "dedicated threads", bufSize);
         LOG.info(STAT_MARKER, "Start Time;Timestamp;Total messages;Duration;TPS;Checksum;Sources;Iteration;" +
-                              "Iterations;Thread Pool;Path;Scheduler;Buffer size;Wait Stats");
+                              "Iterations;Thread Pool;Path;Buffer size;Wait Stats");
 
-        Parameters p = new Parameters(sources, iterations, messages, path, poolSize, schedulerType, startTime, bufSize);
+        Parameters p = new Parameters(sources, iterations, messages, path, poolSize, startTime, bufSize);
         for (int iter = 0; iter < iterations; iter++) {
             LOG.info("Starting iteration {}...", iter+1);
             Result result = poolSize <= 0
@@ -96,9 +94,8 @@ public class SyncApp {
 
     private static Result runWithThreadPool(int sources, String path, int poolSize,
             Parameters parameters) {
-        ZiploqFactory.ZiploqServiceBuilder<PerfMessage> ziploq = ZiploqFactory
-                .serviceBuilder(COMPARATOR)
-                .setSchedulerType(parameters.schedulerType)
+        ZiploqFactory.ManagedZiploqBuilder<PerfMessage> ziploq = ZiploqFactory
+                .managedZiploqBuilder(COMPARATOR)
                 .setPoolSize(poolSize);
 
         long messagesPerSource = parameters.messages / sources;
@@ -123,19 +120,19 @@ public class SyncApp {
 
     }
 
-    private static Result process(Sequencer<PerfMessage> sequencer) throws InterruptedException {
+    private static Result process(Zipq<PerfMessage> ziploq) throws InterruptedException {
         long start = System.currentTimeMillis();
         long messages = 0L;
         long checksum = 0L;
         long prev = 0L;
         Entry<PerfMessage> msg;
-        while ((msg = sequencer.take()) != Ziploq.<PerfMessage>getEndSignal()) {
+        while ((msg = ziploq.take()) != Ziploq.<PerfMessage>getEndSignal()) {
             messages++;
             // path-dependent checksum to prevent rearrangements
             checksum += (msg.getMessage().getI() - prev) * (msg.getMessage().getI() - prev);
             prev = msg.getMessage().getI();
         }
-        int[] delayStats = ((ZiploqImpl<PerfMessage>) sequencer).delayStats();
+        int[] delayStats = ((ZiploqImpl<PerfMessage>) ziploq).delayStats();
         LOG.info("Checksum: {}, Delay stats: {}", checksum, delayStats);
         return new Result(messages, checksum, delayStats, System.currentTimeMillis() - start);
     }
@@ -153,7 +150,6 @@ public class SyncApp {
                 Integer.toString(parameters.iterations),
                 parameters.threadPool > 0 ? Long.toString(parameters.threadPool) : "0",
                 parameters.path,
-                Integer.toString(parameters.schedulerType),
                 Integer.toString(parameters.bufferSz),
                 Arrays.toString(result.delayStats));
     }
@@ -178,16 +174,14 @@ public class SyncApp {
         private final String path;
         private final int threadPool;
         private final long startTime;
-        private final int schedulerType;
         private final int bufferSz;
         public Parameters(int sources, int iterations, long messages, String path, int threadPool,
-                int schedulerType, long startTime, int bufferSz) {
+                long startTime, int bufferSz) {
             this.sources = sources;
             this.iterations = iterations;
             this.messages = messages;
             this.path = path;
             this.threadPool = threadPool;
-            this.schedulerType = schedulerType;
             this.startTime = startTime;
             this.bufferSz = bufferSz;
         }
