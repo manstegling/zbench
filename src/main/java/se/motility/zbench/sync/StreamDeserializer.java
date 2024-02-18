@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2021-2024 Måns Tegling
+ *
+ * Use of this source code is governed by the MIT license that can be found in the LICENSE file.
+ */
 package se.motility.zbench.sync;
 
 import java.io.File;
@@ -21,7 +26,10 @@ public class StreamDeserializer {
         this.consumer = consumer;
     }
 
+    // Uses a single JsonParser instance for the whole file,
+    // deserializing in a highly efficient streaming fashion
     public void readMessages(Reader reader) {
+        //TODO: Proper exception handling
         PerfMessage message;
         try (JsonParser parser = factory.createParser(reader)) {
             while (parser.nextToken() != null) {

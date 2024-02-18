@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2021-2024 Måns Tegling
+ *
+ * Use of this source code is governed by the MIT license that can be found in the LICENSE file.
+ */
 package se.motility.zbench.sync;
 
 import java.io.IOException;
@@ -20,6 +25,14 @@ import se.motility.ziploq.api.ZiploqFactory;
 import se.motility.ziploq.api.Zipq;
 import se.motility.ziploq.impl.ZiploqImpl;
 
+/**
+ * A command-line app for benchmarking Ziploq simulating real-world usage. It can be used to
+ * compare performance between different number of dedicated threads and using the managed
+ * Ziploq thread-pool. It outputs performance metrics as well as checksums to verify
+ * implementations, e.g. for explorative analysis.
+ *
+ * @author M Tegling
+ */
 public class SyncApp {
 
     static {
@@ -101,7 +114,7 @@ public class SyncApp {
         long messagesPerSource = parameters.messages / sources;
         for (int i = 0; i < sources; i++) {
             String file = String.valueOf(i);
-            SourceImpl source = new SourceImpl(path, file, messagesPerSource);
+            FileSourceImpl source = new FileSourceImpl(path, file, messagesPerSource);
             try {
                 source.init();
                 ziploq.registerOrdered(source, parameters.bufferSz, file);

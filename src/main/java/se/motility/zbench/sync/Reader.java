@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2021-2024 Måns Tegling
+ *
+ * Use of this source code is governed by the MIT license that can be found in the LICENSE file.
+ */
 package se.motility.zbench.sync;
 
 import java.io.BufferedInputStream;
@@ -18,6 +23,13 @@ import org.slf4j.LoggerFactory;
 import se.motility.zbench.generator.PerfMessage;
 import se.motility.ziploq.api.SynchronizedConsumer;
 
+/**
+ * A high-performance Reader for newline-delimited json files, suitable for Ziploq.
+ *
+ * @implNote Has been used to explore various approaches to read those files in the best
+ * way, hence the number of unused read-methods available in the class.
+ * @author M Tegling
+ */
 public class Reader {
 
     private static final String FILE_SUFFIX = ".messages";

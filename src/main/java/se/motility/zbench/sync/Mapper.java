@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2021-2024 Måns Tegling
+ *
+ * Use of this source code is governed by the MIT license that can be found in the LICENSE file.
+ */
 package se.motility.zbench.sync;
 
 import java.io.IOException;
@@ -8,6 +13,12 @@ import se.motility.zbench.generator.PerfMessage;
 
 public abstract class Mapper {
 
+    /**
+     * Fast streaming deserializer aware of the message structure, e.g. no nested objects
+     * @param parser
+     * @return a deserialized {@link PerfMessage}
+     * @throws IOException
+     */
     public static PerfMessage readPerfMessage(JsonParser parser) throws IOException {
         PerfMessage message = new PerfMessage();
 

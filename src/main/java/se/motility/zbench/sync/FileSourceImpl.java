@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2021-2024 Måns Tegling
+ *
+ * Use of this source code is governed by the MIT license that can be found in the LICENSE file.
+ */
 package se.motility.zbench.sync;
 
 import java.io.File;
@@ -17,21 +22,28 @@ import se.motility.ziploq.api.Ziploq;
 
 import static se.motility.zbench.sync.Reader.getStream;
 
-public class SourceImpl implements Source<PerfMessage> {
+/**
+ * A simple example of a {@link Source} implementation for a single file containing
+ * {@link PerfMessage}s. It handles uncompressed and compressed (gzip) files dynamically.
+ *
+ * @author M Tegling
+ */
+public class FileSourceImpl implements Source<PerfMessage> {
 
     private static final String FILE_SUFFIX = ".messages";
     private static final String GZIP_SUFFIX = ".gz";
-    private static final Logger LOG = LoggerFactory.getLogger(SourceImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FileSourceImpl.class);
 
     private final JsonFactory factory = new JsonFactory();
     private final String filename;
     private final long maxMessages;
     private long messageCount;
 
+    // Keeps the file open during its whole lifecycle
     private InputStream in;
     private JsonParser parser;
 
-    public SourceImpl(String path, String filename, long maxMessages) {
+    public FileSourceImpl(String path, String filename, long maxMessages) {
         String fullName = path + filename + FILE_SUFFIX;
         File file = new File(fullName);
         if (!file.exists()) {
@@ -45,6 +57,10 @@ public class SourceImpl implements Source<PerfMessage> {
         this.maxMessages = maxMessages;
     }
 
+    /**
+     * Must be called before starting the Ziploq machinery
+     * @throws IOException if the associated file could not be opened
+     */
     public void init() throws IOException {
         in = getStream(filename);
         parser = factory.createParser(in);
@@ -52,6 +68,7 @@ public class SourceImpl implements Source<PerfMessage> {
 
     @Override
     public BasicEntry<PerfMessage> emit() {
+        //TODO: proper exception handling
         for (;;) {
             try {
                 if (messageCount++ < maxMessages && parser.nextToken() != null) {
@@ -71,7 +88,7 @@ public class SourceImpl implements Source<PerfMessage> {
         }
     }
 
-    private void close() {
+    public void close() {
         try {
             parser.close();
             in.close();

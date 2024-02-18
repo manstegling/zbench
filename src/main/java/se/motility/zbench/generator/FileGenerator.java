@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2021-2024 Måns Tegling
+ *
+ * Use of this source code is governed by the MIT license that can be found in the LICENSE file.
+ */
 package se.motility.zbench.generator;
 
 import java.io.BufferedReader;
@@ -13,6 +18,23 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * A command-line app for creating test data. Test data consists of deterministically random
+ * newline-delimited json files with {@link PerfMessage} messages. Message content is distributed
+ * with a decreasing number of messages per file, such that the first file has {@code m} messages,
+ * the second has {@code m/2} messages, the third {@code m/3} messages, and so on. That means you
+ * can always read a fixed number of messages from {@code k} files resulting in {@code m} messages
+ * in total, using a minimal disk footprint. The data generator keeps track on what has already
+ * been generated through a file "filegen.meta", so that if you want to add more data later,
+ * it does not have to recreate already produced data.
+ *
+ * The messages are partially ordered within each file, based on 'timestamp' and 'sequence'.
+ * Those values are not guaranteed to increase so there might be multiple messages having the same
+ * timestamp, same sequence, or both. This forces any user relying on total ordering to be careful
+ * when selecting tie-breakers and perhaps provide their own sorting.
+ *
+ * @author M Tegling
+ */
 public class FileGenerator {
 
     static {
